@@ -3,14 +3,17 @@ streamlit==1.44.1
 streamlit-webrtc==0.61.0
 #streamlit-chat==0.0.4
 requests
-speechrecognition
+speechrecognition==3.10.1
+pyngrok
+python-dotenv
 
 # backend
 fastapi==0.115.5
 uvicorn
-transformers
+transformers==4.47.0
 torch==2.2.0
-# torchaudio==2.2.0
-# torchvision==0.17.0
-# torchmetrics==1.6.1
+torchaudio==2.2.0
+torchvision==0.17.1
+torchmetrics==1.6.1
 sentencepiece
+numpy==1.26.4
