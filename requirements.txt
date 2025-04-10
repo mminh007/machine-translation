@@ -12,8 +12,9 @@ fastapi==0.115.5
 uvicorn
 transformers==4.47.0
 torch==2.2.0
-torchaudio==2.2.0
-torchvision==0.17.1
-torchmetrics==1.6.1
+torchaudio
+torchvision
+torchmetrics
 sentencepiece
 numpy==1.26.4
+python-multipart

@@ -33,9 +33,12 @@ def main(ngrok_token=None):
             print("Ngrok authentication token set.")
 
         except Exception as e:
-            print(f"Error loading ngrok token: {e}")
-            print("Please provide the ngrok token as an argument or set it in the .env file.")
+            print(f"❌ Error loading ngrok token: {e}")
+            print("❌ Please provide the ngrok token as an argument or set it in the .env file.")
             return
+    else:
+        ngrok.set_auth_token(ngrok_token)
+        print("Ngrok authentication token set.")
 
     print("Starting FastAPI backend...")
     fastapi_process = subprocess.Popen(
@@ -79,7 +82,7 @@ def main(ngrok_token=None):
 if __name__ == "__main__":    
 
     parser = argparse.ArgumentParser(description="Run FastAPI and Streamlit with ngrok tunnels.")
-    parser.add_argument("--ngrok-token", type=str, default=None, help="Ngrok authentication token.", help=argparse.SUPPRESS)
+    parser.add_argument("--ngrok-token", type=str, default=None, help=argparse.SUPPRESS)
     args = parser.parse_args()
 
     main(args.ngrok_token)
