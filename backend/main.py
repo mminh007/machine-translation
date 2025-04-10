@@ -9,11 +9,16 @@ app = FastAPI()
 
 # Load model
 model_name = "facebook/mbart-large-50-many-to-many-mmt"
+print("Loading model...")
 tokenizer = MBart50TokenizerFast.from_pretrained(model_name)
 model = MBartForConditionalGeneration.from_pretrained(model_name)
+print("Model loaded.")
 
 @app.post("/translate/audio")
 async def translate_audio(audio: UploadFile, src_lang: str = Form(...), tgt_lang: str = Form(...)):
+    if src_lang not in tokenizer.lang_code_to_id or tgt_lang not in tokenizer.lang_code_to_id:
+        return {"error": "Unsupported language code."}
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         tmp.write(await audio.read())
         tmp_path = tmp.name
@@ -39,6 +44,9 @@ async def translate_audio(audio: UploadFile, src_lang: str = Form(...), tgt_lang
 
 @app.post("/translate/text")
 async def translate_text(text: str = Form(...), src_lang: str = Form(...), tgt_lang: str = Form(...)):
+    if src_lang not in tokenizer.lang_code_to_id or tgt_lang not in tokenizer.lang_code_to_id:
+        return {"error": "Unsupported language code."}
+
     tokenizer.src_lang = src_lang
     encoded = tokenizer(text, return_tensors="pt")
     generated = model.generate(
