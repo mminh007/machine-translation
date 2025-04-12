@@ -30,10 +30,11 @@ pip install -r requirements.txt
 ```
 
 :point_right: **Create a `.env` file**
+
 In the root the directory create a `.env` file and add your **Ngrok token**
 
 ```
-# env
+# .env file
 NGROK_TOKEN=your_ngrok_token_here
 ```
 :key: **You can get your token from:** https://dashboard.ngrok.com/get-started/your-authtoken
@@ -44,7 +45,7 @@ NGROK_TOKEN=your_ngrok_token_here
 
 ```
 # bash
-python all.py
+python app.py
 ```
 
 This will:
