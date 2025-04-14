@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import requests
 import os
 
-def wait_for_server(url, timeout=30):
+def wait_for_server(url, timeout=70):
     print(f"⏳ Waiting for server at {url} to start...")
     start_time = time.time()
     while time.time() - start_time < timeout:
@@ -64,7 +64,7 @@ def main(ngrok_token=None):
     )
 
     streanlit_tunnel = ngrok.connect(8501, "http", bind_tls=True)
-    print(f"Streamlit Tunnel URL: {streanlit_tunnel.public_url}")
+    print(f"🌏 Streamlit Tunnel URL: {streanlit_tunnel.public_url}")
     
     try:
         print("FastAPI and Streamlit are running... Press Ctrl+C to stop.")
