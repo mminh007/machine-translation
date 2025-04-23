@@ -1,5 +1,5 @@
 from utils.base import BaseModelWrapper, TextRequest, SpeechRequest
-from transformers import AutoModel, AutoTokenizer
+from transformers import MBart50Tokenizer, MBartForConditionalGeneration
 from transformers import pipeline
 import tempfile
 
@@ -17,11 +17,11 @@ class TextModel(BaseModelWrapper):
     
     def __load_model__(self):
 
-        model = AutoModel.from_pretrained(self.model_name)
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        model = MBartForConditionalGeneration.from_pretrained(self.model_name)
+        tokenizer = MBart50Tokenizer.from_pretrained(self.model_name)
 
         print(f"✅ Model loaded.")
-        return model.to("cuda"), tokenizer.to("cuda")
+        return model.to("cuda"), tokenizer
     
     def generate(self, request: TextRequest):
         """
@@ -38,7 +38,7 @@ class TextModel(BaseModelWrapper):
     
         try:
             tokenizer.src_lang = request.src_lang
-            inputs = tokenizer(request.text, return_tensors="pt")
+            inputs = tokenizer(request.text, return_tensors="pt").to("cuda")
             outputs = model.generate(**inputs, forced_bos_token_id=tokenizer.lang_code_to_id[request.tgt_lang])
             generated_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
             return {"translation": generated_text}
