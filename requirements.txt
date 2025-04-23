@@ -6,6 +6,11 @@ requests
 speechrecognition==3.10.1
 pyngrok
 python-dotenv
+sox
+soundfile
+# ffmpeg-python
+# ffmpeg-python==0.2.0
+# pydub==0.25.1
 
 # backend
 fastapi==0.115.5

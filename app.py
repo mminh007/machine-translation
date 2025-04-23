@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import requests
 import os
 
-def wait_for_server(url, timeout=30):
+def wait_for_server(url, timeout=70):
     print(f"⏳ Waiting for server at {url} to start...")
     start_time = time.time()
     while time.time() - start_time < timeout:
@@ -40,7 +40,7 @@ def main(ngrok_token=None):
         ngrok.set_auth_token(ngrok_token)
         print("Ngrok authentication token set.")
 
-    print("Starting FastAPI backend...")
+    print("🏃 Starting FastAPI backend...")
     fastapi_process = subprocess.Popen(
         ["python", "backend/main.py"],
         stdout=subprocess.PIPE,
@@ -53,10 +53,10 @@ def main(ngrok_token=None):
     
     # Start ngrok tunnels
     api_tunnel = ngrok.connect(8000, "http", bind_tls=True)
-    print(f"API Tunnel URL: {api_tunnel.public_url}")
+    print(f"🚀 API Tunnel URL: {api_tunnel.public_url}")
     time.sleep(5)
     
-    print("Starting Streamlit frontend...")
+    print("🏃 Starting Streamlit frontend...")
     streamlit_process = subprocess.Popen(
         ["streamlit", "run", "frontend/main.py"],
         stdout=subprocess.PIPE,
@@ -64,10 +64,10 @@ def main(ngrok_token=None):
     )
 
     streanlit_tunnel = ngrok.connect(8501, "http", bind_tls=True)
-    print(f"Streamlit Tunnel URL: {streanlit_tunnel.public_url}")
+    print(f"🚀 Streamlit Tunnel URL: {streanlit_tunnel.public_url}")
     
     try:
-        print("FastAPI and Streamlit are running... Press Ctrl+C to stop.")
+        print("⚠️ FastAPI and Streamlit are running... Press Ctrl+C to stop.")
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
