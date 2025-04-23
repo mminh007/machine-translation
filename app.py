@@ -64,11 +64,7 @@ def main(ngrok_token=None):
     )
 
     streanlit_tunnel = ngrok.connect(8501, "http", bind_tls=True)
-<<<<<<< HEAD
     print(f"🌏 Streamlit Tunnel URL: {streanlit_tunnel.public_url}")
-=======
-    print(f"🚀 Streamlit Tunnel URL: {streanlit_tunnel.public_url}")
->>>>>>> 64235c9 (updating...)
     
     try:
         print("⚠️ FastAPI and Streamlit are running... Press Ctrl+C to stop.")
