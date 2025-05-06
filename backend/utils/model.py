@@ -1,8 +1,24 @@
 from utils.base import BaseModelWrapper, TextRequest, SpeechRequest
-from transformers import MBart50Tokenizer, MBartForConditionalGeneration
+from transformers import MBart50Tokenizer, MBartForConditionalGeneration, AutoModelForSeq2SeqLM, AutoTokenizer
 from transformers import pipeline
 import tempfile
+class BaseModelWrapper:
+    """
+    Base class for all models.
+    """
 
+    def __load_model__(self):
+        raise NotImplementedError("load_model method not implemented.")
+        
+    def generate(self, request: TextRequest):
+        
+        raise NotImplementedError("Generate method not implemented.")
+
+class TextRequest(BaseModel):
+    text: str
+    src_lang: str
+    tgt_lang: str
+    model: str
 class TextModel(BaseModelWrapper):
     """
     Text model class that inherits from BaseModelWrapper.
@@ -45,7 +61,6 @@ class TextModel(BaseModelWrapper):
         except Exception as e:
             return {"error": str(e)}
 
-
 class SpeechModel(BaseModelWrapper):
     """
     Speech model class that inherits from BaseModelWrapper.
@@ -53,7 +68,7 @@ class SpeechModel(BaseModelWrapper):
     """
     def __init__(self):
         super().__init__()
-        self.model_name = "openai/whisper-large-v3-turbo"  # Example model name
+        self.model_name = "openai/whisper-large-v3-turbo"  
 
     def __str__(self):
         return f"Speech Model Name: {self.model_name}"
@@ -89,3 +104,5 @@ class SpeechModel(BaseModelWrapper):
                 return {"translation": result["text"]}
         except Exception as e:
             return {"error": str(e)}
+
+
