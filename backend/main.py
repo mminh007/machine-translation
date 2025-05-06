@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, Form
-from utils.base import TextRequest, SpeechRequest
+from backend.schema.base import TextRequest, SpeechRequest
 from utils.model import TextModel, SpeechModel
 import speech_recognition as sr
 import tempfile
