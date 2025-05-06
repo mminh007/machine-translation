@@ -1,24 +1,8 @@
-from utils.base import BaseModelWrapper, TextRequest, SpeechRequest
+from backend.schema.base import BaseModelWrapper, TextRequest, SpeechRequest
 from transformers import MBart50Tokenizer, MBartForConditionalGeneration, AutoModelForSeq2SeqLM, AutoTokenizer
 from transformers import pipeline
 import tempfile
-class BaseModelWrapper:
-    """
-    Base class for all models.
-    """
 
-    def __load_model__(self):
-        raise NotImplementedError("load_model method not implemented.")
-        
-    def generate(self, request: TextRequest):
-        
-        raise NotImplementedError("Generate method not implemented.")
-
-class TextRequest(BaseModel):
-    text: str
-    src_lang: str
-    tgt_lang: str
-    model: str
 class TextModel(BaseModelWrapper):
     """
     Text model class that inherits from BaseModelWrapper.
@@ -27,17 +11,19 @@ class TextModel(BaseModelWrapper):
     def __init__(self):  
         super().__init__()
         self.model_name = "facebook/mbart-large-50-one-to-many-mmt"
+        self.model = None
+        self.tokenizer = None
 
     def __str__(self):
         return f"Text Model Name: {self.model_name}"
     
     def __load_model__(self):
-
-        model = MBartForConditionalGeneration.from_pretrained(self.model_name)
-        tokenizer = MBart50Tokenizer.from_pretrained(self.model_name)
+        if self.model is None or self.tokenizer is None:
+            self.model = MBartForConditionalGeneration.from_pretrained(self.model_name)
+            self.tokenizer = MBart50Tokenizer.from_pretrained(self.model_name)
 
         print(f"✅ Model loaded.")
-        return model.to("cuda"), tokenizer
+        return self.model.to("cuda"), self.tokenizer
     
     def generate(self, request: TextRequest):
         """
