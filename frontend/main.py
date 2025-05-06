@@ -7,6 +7,8 @@ import wave
 import numpy as np
 import torchaudio
 import torch
+import uuid
+
 
 torchaudio.set_audio_backend("soundfile")
 
@@ -105,20 +107,49 @@ if __name__ == "__main__":
         with st.sidebar:           
             src_lang = st.selectbox("Source Language", ["en_XX", "vi_VN", "fr_XX", "de_DE", "es_XX", "ru_RU", "zh_CN", "ja_XX"])
             tgt_lang = st.selectbox("Target Language", ["en_XX", "vi_VN", "fr_XX", "de_DE", "es_XX", "ru_RU", "zh_CN", "ja_XX"])
+            model = st.selectbox("Model", ["google/T5", "facebook/Mbart50"])
 
-        text_input = st.text_area("Enter text to translate")
+            if st.button("New Chat", use_container_width=True):
+                st.session_state.messages = []
+                st.session_state.thread_id = str(uuid.uuid4())
+                st.rerun()
 
-        if st.button("Translate"):
-            # Call the backend API for translation
-            response = requests.post(
-                "http://localhost:8000/translate/text",
-                json={"text": text_input, "src_lang": src_lang, "tgt_lang": tgt_lang},
-            )
+        if "thread_id" not in st.session_state:
+            thread_id = st.query_params.get("thread_id", None)
+            if thread_id is None:
+                thread_id = str(uuid.uuid4())
+                messages = []
+            st.session_state.thread_id = thread_id
+            st.session_state.messages = messages
+        
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
 
-            if response.status_code == 200:
-                result = response.json()
+        # text_input = st.text_area("Enter text to translate")
+        if user_input := st.chat_input():
+            st.session_state.messages.append({"role": "user", "content": user_input})
+            with st.chat_message("user"):
+                st.write(user_input)
 
-                st.success(f"Translation: {result['translation']}")
-            else:
-                st.error("❌ Error in translation")
+            try:
+                # Call the backend API for translation
+                response = requests.post(
+                    "http://localhost:8000/translate/text",
+                    json={"text": user_input, "src_lang": src_lang, "tgt_lang": tgt_lang, "model": model},
+                )
+
+                if response.status_code == 200:
+                    result = response.json()
+                    st.session_state.messages.append({"role": "assistant", "content": result["translation"]})
+                    with st.chat_message("ai"):
+                        st.write(result["translation"])
+
+                else:
+                    st.error(f"❌ Error: {response.json()}")
+                
+                # st.rerun()
+            except requests.exceptions.RequestException as e:
+                st.error(f"❌ Error: {e}")
+                    
 

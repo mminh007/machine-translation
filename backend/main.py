@@ -11,12 +11,13 @@ app = FastAPI()
 @app.post("/translate/audio")
 async def translate_audio(request: SpeechRequest):
     model = SpeechModel()
-
+    return model.generate(request)
 
 
 @app.post("/translate/text")
 async def translate_text(request: TextRequest):
     model = TextModel()
+
     return model.generate(request)
 
 if __name__ == "__main__":
