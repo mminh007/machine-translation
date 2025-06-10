@@ -38,6 +38,9 @@ In the root the directory create a `.env` file and add your **Ngrok token**
 ```
 # .env file
 NGROK_TOKEN=your_ngrok_token_here
+VLLM_API_KEY=your_VLLM_API_KEY_here
+HUGGINGFACE_TOKEN=your_HUGGINGFACE_TOKEN_here
+_here
 ```
 
 :key: **You can get your token from:** https://dashboard.ngrok.com/get-started/your-authtoken

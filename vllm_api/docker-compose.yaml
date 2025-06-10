@@ -1,0 +1,24 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.8.2
+    container_name: vllm
+    entrypoint: ["/bin/bash", "/app/entrypoint.sh"]
+    env_file:
+      - ../.env
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+      - /c/Users/tuanm/.cache/huggingface:/root/.cache/huggingface
+      - /c/Users/tuanm/.cache/vllm:/root/.cache/vllm
+    networks:
+      - paos-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu] 
+
+networks:
+  paos-network:
+    external: true
