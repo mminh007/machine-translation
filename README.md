@@ -5,24 +5,28 @@ A multilingual translation system that supports both text and speech input, buil
 ---
 
 ## Project structure
+```
+#bash
 machine-translator/
-├── src/ # Main source code
-│ ├── agents/ # LangChain / RAG agents
-│ ├── backend/ # FastAPI app
-│ ├── client/ # Frontend-to-backend request handler
-│ ├── core/ # Core logic (translation, TTS, STT)
-│ ├── schema/ # Pydantic models
-│ ├── streamlit_app.py # Streamlit UI app
+├── src/                    # Main source code
+│ ├── agents/               # LangChain / RAG agents
+│ ├── backend/              # FastAPI app
+│ ├── client/               # Frontend-to-backend request handler
+│ ├── core/                 # Core logic (translation, TTS, STT)
+│ ├── schema/               # Pydantic models
+│ ├── streamlit_app.py      # Streamlit UI app
 │ └── ...
-├── vlm_api/ # Vision-language model APIs
-├── docker-compose.yaml # Docker orchestration config
-├── frontend.dockerfile # Dockerfile for Streamlit UI
-├── entrypoint.sh # Entrypoint script
-├── app_ngrok.py # Ngrok tunnel (for local deploy)
-├── .env # Environment variables
-├── requirements.txt # Python dependencies
-├── Makefile # Optional command shortcuts
-└── README.md # This file
+├── vlm_api/                # Vision-language model APIs
+├── docker-compose.yaml     # Docker orchestration config
+├── frontend.dockerfile     # Dockerfile for Streamlit UI
+├── entrypoint.sh           # Entrypoint script
+├── app_ngrok.py            # Ngrok tunnel (for local deploy)
+├── .env                    # Environment variables
+├── requirements.txt        # Python dependencies
+├── Makefile                # Optional command shortcuts
+└── README.md               # This file
+---
+```
 
 ---
 
