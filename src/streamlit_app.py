@@ -87,7 +87,8 @@ async def main():
 
             st.session_state.thread_id = thread_id
             st.session_state.messages = messages
-
+            
+        # voice
         if "recorded_text" not in st.session_state:
             st.session_state.recorded_text = ""
 
@@ -97,16 +98,22 @@ async def main():
         for msg in st.session_state.messages:
             with st.chat_message(msg.type):
                 st.write(msg.content)
-        
+    
+
         with st.form("Send"):
             col1, col2 = st.columns([9, 1])
             with col1:
-                usr_input = st.text_input("", key="audio_input")
+                default_text = st.session_state.get("recorded_text", "")
+                usr_input = st.text_input("", value=default_text, key="audio_input")
             with col2:
                 audio_bytes = audio_recorder(text="", icon_size="2x", icon_name="microphone")
             submitted = st.form_submit_button("Send")
 
         if audio_bytes:
+            st.session_state["pending_audio"] = audio_bytes
+
+        if st.session_state.get("pending_audio"):
+            audio_bytes = st.session_state["pending_audio"]
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
                 f.write(audio_bytes)
                 audio_path = f.name
@@ -115,13 +122,18 @@ async def main():
                 res = requests.post("http://backend:8000/speech2text/audio", files={"audio_file": f})
                 if res.ok:
                     st.session_state["recorded_text"] = res.json()["text"]
+                    logger.info(f"🎤 Audio to text: {st.session_state['recorded_text']}")
                 else:
                     logger.error(f"❌ Voice recognition failed: {res.status_code} - {res.text}")
                     st.error("❌ Voice recognition failed.")
             os.remove(audio_path)
 
+            del st.session_state["pending_audio"]
+            st.rerun()
+
         if submitted and usr_input.strip() != "":
             st.session_state.recorded_text = ""
+
 
             st.session_state.messages.append(ChatMessage(type="human", content=usr_input))
             msg = ChatMessage(type="human", content=usr_input)
@@ -201,6 +213,7 @@ async def main():
         # text_input = st.text_area("Enter text to translate")
         if user_input := st.chat_input():
             st.session_state.messages.append(ChatMessage(type="human", content=user_input))
+            msg = ChatMessage(type="human", content=user_input)
             with st.chat_message(msg.type):
                 st.write(msg.content)
 
@@ -214,8 +227,9 @@ async def main():
                 data = response.json()
                 if response.status_code == 200 and "text" in data:                   
                     st.session_state.messages.append(ChatMessage(type="ai", content=data["text"]))
-                    with st.chat_message("ai"):
-                        st.write(data["text"])
+                    msg = ChatMessage(type="ai", content=data["text"])
+                    with st.chat_message(msg.type):
+                        st.write(msg.content)
 
                 else:
                     st.write(data["error"])

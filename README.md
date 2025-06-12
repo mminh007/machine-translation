@@ -121,7 +121,7 @@ The project also supports the integration of the following paid models:
 
 | Model Name |	Description |
 | --- | ------------ |
-|   gpt-4o | OpenAI’s GPT-4 Omni |
+| gpt-4o | OpenAI’s GPT-4 Omni |
 | gpt-4o-mini |	Lightweight GPT-4o variant |
 | azure-gpt-4o | GPT-4o via Microsoft Azure API |
 | azure-gpt-4o-mini | Mini GPT-4o via Azure |

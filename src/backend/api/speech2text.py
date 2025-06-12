@@ -1,7 +1,7 @@
 from fastapi import Request, UploadFile, File, APIRouter, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from schema.base import SpeechRequest
-from schema.models import SpeechModel
+from schema.base import SpeechRequest, TextRequest
+from schema.models import SpeechModel, TextModel
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 from logs.logger_factory import get_logger
@@ -35,13 +35,16 @@ async def translate_audio(request: Request, audio_file: UploadFile = File(...)):
     return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-# @router.post("/translate/text")
-# async def translate_text(request: TextRequest):
-#     try:
-#         model = TextModel()
-#         return model.generate(request)
+@router.post("/text")
+async def translate_text(request: TextRequest):
+    try:
+        if not request.text:
+            logger.error("❌ Text is required for translation.")
+            raise HTTPException(status_code=400, detail="Text is required for translation.")
+        model = TextModel()
+        return model.generate(request)
     
-#     except Exception as e:
-#         print(f"🔥 Backend Error: {str(e)}")
-#         return JSONResponse(status_code=500, content={"error": str(e)})
+    except Exception as e:
+        logger.exception(f"🔥 Error during text translation: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
