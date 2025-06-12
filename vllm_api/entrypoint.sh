@@ -16,6 +16,6 @@ $PYTHON_CMD -m vllm.entrypoints.openai.api_server \
     --api-key paos2025 \
     --port 8001 \
     --quantization bitsandbytes \
-    --gpu-memory-utilization 0.9 \
-    --max-model-len 8192 \
+    --gpu-memory-utilization 0.7 \
+    --max-model-len 2048 \
     --dtype half

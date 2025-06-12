@@ -1,8 +1,55 @@
 from enum import StrEnum
 from typing import TypeAlias
 import os
-from schema.base import BaseModelWrapper, SpeechRequest
+from schema.base import BaseModelWrapper, SpeechRequest, TextRequest
+from transformers import MBart50Tokenizer, MBartForConditionalGeneration
 import whisper
+
+
+class TextModel(BaseModelWrapper):
+    """
+    Text model class that inherits from BaseModelWrapper.
+    This class is used to load and manage text models.
+    """
+    def __init__(self):  
+        super().__init__()
+        self.model_name = "facebook/mbart-large-50-one-to-many-mmt"
+        self.model = None
+        self.tokenizer = None
+
+    def __str__(self):
+        return f"Text Model Name: {self.model_name}"
+    
+    def __load_model__(self):
+        if self.model is None or self.tokenizer is None:
+            self.model = MBartForConditionalGeneration.from_pretrained(self.model_name)
+            self.tokenizer = MBart50Tokenizer.from_pretrained(self.model_name)
+
+        print(f"✅ Model loaded.")
+        return self.model.to("cuda"), self.tokenizer
+    
+    def generate(self, request: TextRequest):
+        """
+        Generate text based on the input request.
+        :param request: TextRequest object containing the input text and languages.
+        :return: Generated text.
+        """
+        model, tokenizer = self.__load_model__()
+        if not model or not tokenizer:
+            raise ValueError("❌ Model or tokenizer not loaded.")
+       
+        if request.src_lang not in tokenizer.lang_code_to_id or request.tgt_lang not in tokenizer.lang_code_to_id:
+            return {"error": "Unsupported language code."}
+    
+        try:
+            tokenizer.src_lang = request.src_lang
+            inputs = tokenizer(request.text, return_tensors="pt").to("cuda")
+            outputs = model.generate(**inputs, forced_bos_token_id=tokenizer.lang_code_to_id[request.tgt_lang])
+            generated_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+            return {"text": generated_text}
+        except Exception as e:
+            return {"error": str(e)}
+        
 
 class SpeechModel(BaseModelWrapper):
     """
