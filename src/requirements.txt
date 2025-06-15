@@ -1,10 +1,13 @@
 # Frontend
 streamlit==1.44.1
 audio_recorder_streamlit
+streamlit-float
 requests
 speechrecognition==3.10.1
 pyngrok
 python-dotenv
+sentencepiece==0.1.99
+transformers==4.47.0
 
 # Backend
 fastapi==0.115.5

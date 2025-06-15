@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_float import *
 import requests
 import tempfile
 import uuid
@@ -92,59 +93,72 @@ async def main():
         if "recorded_text" not in st.session_state:
             st.session_state.recorded_text = ""
 
+        if "processing" not in st.session_state:
+            st.session_state.processing = ""
+
         if not st.session_state.messages:
             st.chat_message("ai").write("🎤 Press the microphone to speak and start the conversation.")
         
         for msg in st.session_state.messages:
             with st.chat_message(msg.type):
-                st.write(msg.content)
-    
+                st.write(msg.content)       
 
-        with st.form("Send"):
-            col1, col2 = st.columns([9, 1])
-            with col1:
-                default_text = st.session_state.get("recorded_text", "")
-                usr_input = st.text_input("", value=default_text, key="audio_input")
-            with col2:
-                audio_bytes = audio_recorder(text="", icon_size="2x", icon_name="microphone")
-            submitted = st.form_submit_button("Send")
+        footer_container = st.container()
+        with footer_container:
+            audio_bytes = audio_recorder("", icon_size="2x", icon_name="microphone")
+
+
+        chat_cont = st.container()
+        with chat_cont:
+            usr_input = st.chat_input("Your message")
+
+        footer_container.float("bottom: 0.5rem; right: -15rem")
+        chat_cont.float("bottom: 1rem; left: 47rem")
 
         if audio_bytes:
-            st.session_state["pending_audio"] = audio_bytes
-
-        if st.session_state.get("pending_audio"):
-            audio_bytes = st.session_state["pending_audio"]
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-                f.write(audio_bytes)
-                audio_path = f.name
-
-            with open(audio_path, "rb") as f:
-                res = requests.post("http://backend:8000/speech2text/audio", files={"audio_file": f})
-                if res.ok:
-                    st.session_state["recorded_text"] = res.json()["text"]
-                    logger.info(f"🎤 Audio to text: {st.session_state['recorded_text']}")
-                else:
-                    logger.error(f"❌ Voice recognition failed: {res.status_code} - {res.text}")
-                    st.error("❌ Voice recognition failed.")
-            os.remove(audio_path)
-
-            del st.session_state["pending_audio"]
-            st.rerun()
-
-        if submitted and usr_input.strip() != "":
+            audio_path = None
+            try:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+                    f.write(audio_bytes)
+                    audio_path = f.name
+                
+                with open(audio_path, "rb") as f:
+                    res = requests.post("http://backend:8000/speech2text/audio", files={"audio_file": f})
+                    if res.ok:
+                        st.session_state["recorded_text"] = res.json()["text"]
+                        logger.info(f"🎤 Audio to text: {st.session_state['recorded_text']}")
+                    else:
+                        logger.error(f"❌ Voice recognition failed: {res.status_code} - {res.text}")
+                        st.error("❌ Voice recognition failed.")
+            finally:
+                if audio_path and os.path.exists(audio_path):
+                    try:
+                        os.remove(audio_path)
+                        logger.info(f"🗑️ Deleted temp file audio_path: {audio_path}")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not delete temp file: {audio_path}. Reason: {e}")
+        
+        if st.session_state.recorded_text != "":
+            st.session_state.messages.append(ChatMessage(type="human", content=st.session_state["recorded_text"]))
+            st.session_state.processing = st.session_state["recorded_text"]
             st.session_state.recorded_text = ""
-
-
+            
+        if usr_input and usr_input != "":
             st.session_state.messages.append(ChatMessage(type="human", content=usr_input))
-            msg = ChatMessage(type="human", content=usr_input)
-            with st.chat_message(msg.type):
-                st.write(msg.content)
+            st.session_state.processing = usr_input
+
+        if st.session_state.processing != "":
+            msg = st.session_state.messages[-1].content
+            with st.chat_message("human"):
+                st.write(msg)
+
+            st.session_state.processing = ""
 
             try:
                 if use_streaming:
-                    logger.info(f"🧠 Sending streaming request to backend with input: {usr_input}")
+                    logger.info(f"🧠 Sending streaming request to backend with input: {msg}")
                     stream = agent_client.astream(
-                        message=usr_input,
+                        message=msg,
                         model="llama-32-1B-instruct",
                         thread_id=st.session_state.thread_id,
                         user_id=user_id,
@@ -158,11 +172,11 @@ async def main():
                     else:
                         logger.info("🧠 Streaming response from backend...")
                         await draw_streaming_response(stream, is_new=True)
-
+                    
                 else:
-                    logger.info(f"🧠 Sending ainvoke request to backend with input: {usr_input}")
+                    logger.info(f"🧠 Sending ainvoke request to backend with input: {msg}")
                     response = await agent_client.ainvoke(
-                        message=usr_input,
+                        message=msg,
                         model="llama-32-1B-instruct",
                         thread_id=st.session_state.thread_id,
                         user_id=user_id,
@@ -176,14 +190,15 @@ async def main():
                     else:
                         st.session_state.messages.append(ChatMessage(type="ai", content=response["content"]))
                         with st.chat_message("ai"):
-                            st.write(response["content"])
-                st.rerun()
+                            st.write(response["content"])    
 
             except Exception as e:
                 tb = traceback.format_exc()
                 logger.error(f"🔥 Error while processing agent response: {e}\n{tb}")
                 st.error(f"❌ Error: {e}")
                 st.stop()
+  
+
 
     else:
         st.title("✍️ Text Translation")
@@ -191,7 +206,7 @@ async def main():
         with st.sidebar:           
             src_lang = st.selectbox("Source Language", ["en_XX", "vi_VN", "fr_XX", "de_DE", "es_XX", "ru_RU", "zh_CN", "ja_XX"])
             tgt_lang = st.selectbox("Target Language", ["en_XX", "vi_VN", "fr_XX", "de_DE", "es_XX", "ru_RU", "zh_CN", "ja_XX"])
-            model = st.selectbox("Model", ["google/T5", "facebook/Mbart50"])
+            model = st.selectbox("Model", ["facebook/Mbart50"])
 
             if st.button("New Chat", use_container_width=True):
                 st.session_state.messages = []
