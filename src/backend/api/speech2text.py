@@ -11,8 +11,10 @@ logger = get_logger("speech2text", "speech2text.log")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     try:
        app.state.speech_model = SpeechModel()
+       app.state.text_model = TextModel()
        yield
        app.state.speech_model = None
+       app.state.text_model = None
     except Exception as e:
         logger.exception(f"🔥 Error during audio translation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -36,13 +38,13 @@ async def translate_audio(request: Request, audio_file: UploadFile = File(...)):
 
 
 @router.post("/text")
-async def translate_text(request: TextRequest):
+async def translate_text(request: Request, user_input: TextRequest):
     try:
-        if not request.text:
+        if not user_input.text:
             logger.error("❌ Text is required for translation.")
             raise HTTPException(status_code=400, detail="Text is required for translation.")
-        model = TextModel()
-        return model.generate(request)
+        model = request.app.state.text_model
+        return model.generate(user_input)
     
     except Exception as e:
         logger.exception(f"🔥 Error during text translation: {e}")

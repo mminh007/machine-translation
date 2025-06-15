@@ -13,7 +13,7 @@ class TextModel(BaseModelWrapper):
     """
     def __init__(self):  
         super().__init__()
-        self.model_name = "facebook/mbart-large-50-one-to-many-mmt"
+        self.model_name = "facebook/mbart-large-50-many-to-many-mmt"
         self.model = None
         self.tokenizer = None
 
@@ -22,11 +22,11 @@ class TextModel(BaseModelWrapper):
     
     def __load_model__(self):
         if self.model is None or self.tokenizer is None:
-            self.model = MBartForConditionalGeneration.from_pretrained(self.model_name)
+            self.model = MBartForConditionalGeneration.from_pretrained(self.model_name, use_safetensors=True)
             self.tokenizer = MBart50Tokenizer.from_pretrained(self.model_name)
 
         print(f"✅ Model loaded.")
-        return self.model.to("cuda"), self.tokenizer
+        return self.model, self.tokenizer
     
     def generate(self, request: TextRequest):
         """
@@ -43,7 +43,7 @@ class TextModel(BaseModelWrapper):
     
         try:
             tokenizer.src_lang = request.src_lang
-            inputs = tokenizer(request.text, return_tensors="pt").to("cuda")
+            inputs = tokenizer(request.text, return_tensors="pt")
             outputs = model.generate(**inputs, forced_bos_token_id=tokenizer.lang_code_to_id[request.tgt_lang])
             generated_text = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
             return {"text": generated_text}
