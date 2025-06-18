@@ -3,6 +3,10 @@
 A multilingual translation system that supports both text and speech input, built using **FastAPI** for the backend and **Streamlit** for the frontend. The system leverages pretrained models and containerized services to provide real-time translation capabilities.
 
 ---
+<p align="center">
+  <img src="/gif/demo.gif" alt="Demo" width="480"/>
+</p>
+
 
 ## Project structure
 ```
