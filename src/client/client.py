@@ -4,6 +4,8 @@ from schema.base import UserInput, StreamInput, ChatHistoryInput, ChatHistory, C
 import json
 from logs.logger_factory import get_logger
 import traceback
+from langdetect import detect
+from gtts import gTTS
 
 logger = get_logger("Client", "client.log")
 
@@ -168,3 +170,21 @@ class AgentClient:
             tb = traceback.format_exc()
             logger.error(f"❌ Invalid response format in get_history(): {e}\n{tb}")
             raise AgentClientError("Invalid history response format.")
+        
+
+def text_to_speech(input_text):
+    try:
+        lang = detect(input_text)
+        lang_code = {"vi": "vi", "en": "en"}.get(lang, "en")  # fallback to English
+
+        tts = gTTS(text=input_text, lang=lang_code)
+        
+        webm_file_path = "temp_audio_play.mp3"
+        tts.save(webm_file_path)
+        logger.info(f"✅ Temp_Voice save at: webm_file_path")
+        return webm_file_path
+    
+    except Exception as e:
+        logger.exception("❌ Error in speak_text")
+        return f"<p>❌ Error in speak_text: {e}</p>"
+

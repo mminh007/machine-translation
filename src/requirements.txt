@@ -8,6 +8,8 @@ pyngrok
 python-dotenv
 sentencepiece==0.1.99
 transformers==4.47.0
+gTTS
+langdetect
 
 # Backend
 fastapi==0.115.5
