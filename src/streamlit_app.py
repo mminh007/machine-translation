@@ -199,6 +199,8 @@ async def main():
                             audio_file = text_to_speech(response["content"])
                             autoplay_audio(audio_file)
                             st.session_state.use_voice = False
+                            
+                            os.remove(audio_file)
 
                         st.session_state.messages.append(ChatMessage(type="ai", content=response["content"]))
                         with st.chat_message("ai"):
