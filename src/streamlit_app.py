@@ -178,6 +178,14 @@ async def main():
                     else:
                         logger.info("🧠 Streaming response from backend...")
                         await draw_streaming_response(stream, is_new=True)
+
+                        if st.session_state.use_voice == True:
+                            msg = st.session_state.messages[-1].content
+                            audio_file = text_to_speech(msg)
+                            autoplay_audio(audio_file)
+                            st.session_state.use_voice = False
+                            
+                            os.remove(audio_file)
                     
                 else:
                     logger.info(f"🧠 Sending ainvoke request to backend with input: {msg}")
@@ -199,7 +207,7 @@ async def main():
                             audio_file = text_to_speech(response["content"])
                             autoplay_audio(audio_file)
                             st.session_state.use_voice = False
-                            
+
                             os.remove(audio_file)
 
                         st.session_state.messages.append(ChatMessage(type="ai", content=response["content"]))
