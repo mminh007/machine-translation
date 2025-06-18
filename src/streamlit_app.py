@@ -3,7 +3,7 @@ from streamlit_float import *
 import requests
 import tempfile
 import uuid
-from client import AgentClient, AgentClientError
+from client import AgentClient, AgentClientError, text_to_speech
 from audio_recorder_streamlit import audio_recorder
 import os
 import asyncio
@@ -12,6 +12,7 @@ from typing import AsyncGenerator
 from schema.base import ChatMessage, ChatHistory
 from logs.logger_factory import get_logger
 import traceback
+import base64
 
 logger = get_logger("streamlit", "streamlit.log")
 
@@ -40,6 +41,7 @@ async def main():
         st.write("Select source translation:")
         
         data_input = st.radio("Input Type", [" ✍️ Text", "🤖 Chatbot"])
+        model = st.selectbox("LLM to use", options=["llama-32-1B-instruct", "gpt-4o-mini"])
         
        
     
@@ -95,6 +97,9 @@ async def main():
 
         if "processing" not in st.session_state:
             st.session_state.processing = ""
+        
+        if "use_voice" not in st.session_state:
+            st.session_state.use_voice = False
 
         if not st.session_state.messages:
             st.chat_message("ai").write("🎤 Press the microphone to speak and start the conversation.")
@@ -142,6 +147,7 @@ async def main():
             st.session_state.messages.append(ChatMessage(type="human", content=st.session_state["recorded_text"]))
             st.session_state.processing = st.session_state["recorded_text"]
             st.session_state.recorded_text = ""
+            st.session_state.use_voice = True
             
         if usr_input and usr_input != "":
             st.session_state.messages.append(ChatMessage(type="human", content=usr_input))
@@ -159,7 +165,7 @@ async def main():
                     logger.info(f"🧠 Sending streaming request to backend with input: {msg}")
                     stream = agent_client.astream(
                         message=msg,
-                        model="llama-32-1B-instruct",
+                        model=model,
                         thread_id=st.session_state.thread_id,
                         user_id=user_id,
                         agent_config={},
@@ -177,7 +183,7 @@ async def main():
                     logger.info(f"🧠 Sending ainvoke request to backend with input: {msg}")
                     response = await agent_client.ainvoke(
                         message=msg,
-                        model="llama-32-1B-instruct",
+                        model=model,
                         thread_id=st.session_state.thread_id,
                         user_id=user_id,
                         agent_config={},
@@ -187,18 +193,23 @@ async def main():
                     if not response or "content" not in response:
                         logger.warning("⚠️ Backend returned empty or invalid response")
                         st.warning("No response received from backend.")
+
                     else:
+                        if st.session_state.use_voice == True:
+                            audio_file = text_to_speech(response["content"])
+                            autoplay_audio(audio_file)
+                            st.session_state.use_voice = False
+
                         st.session_state.messages.append(ChatMessage(type="ai", content=response["content"]))
                         with st.chat_message("ai"):
                             st.write(response["content"])    
-
+                        
             except Exception as e:
                 tb = traceback.format_exc()
                 logger.error(f"🔥 Error while processing agent response: {e}\n{tb}")
                 st.error(f"❌ Error: {e}")
                 st.stop()
   
-
 
     else:
         st.title("✍️ Text Translation")
@@ -386,6 +397,17 @@ async def draw_streaming_response(
             streaming_placeholder.write(streaming_content)
         if is_new:
             st.session_state.messages.append(ChatMessage(type="ai", content=streaming_content))
+
+def autoplay_audio(file_path: str):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode("utf-8")
+    md = f"""
+    <audio autoplay>
+    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+    </audio>
+    """
+    st.markdown(md, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
