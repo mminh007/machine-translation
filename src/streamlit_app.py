@@ -43,8 +43,7 @@ async def main():
         data_input = st.radio("Input Type", [" ✍️ Text", "🤖 Chatbot"])
         model = st.selectbox("LLM to use", options=["llama-32-1B-instruct", "gpt-4o-mini"])
         
-       
-    
+          
     if data_input == "🤖 Chatbot":
         st.title("🤖 Chatbot")
         st.write("This app translates audio or text from Vietnamese to English and vice versa.")
@@ -179,13 +178,15 @@ async def main():
                         logger.info("🧠 Streaming response from backend...")
                         await draw_streaming_response(stream, is_new=True)
 
-                        if st.session_state.use_voice == True:
+                        if st.session_state.use_voice:
+                            st.session_state.use_voice = False 
+
                             msg = st.session_state.messages[-1].content
                             audio_file = text_to_speech(msg)
                             autoplay_audio(audio_file)
-                            st.session_state.use_voice = False
-                            
+
                             os.remove(audio_file)
+                        
                     
                 else:
                     logger.info(f"🧠 Sending ainvoke request to backend with input: {msg}")
@@ -203,12 +204,13 @@ async def main():
                         st.warning("No response received from backend.")
 
                     else:
-                        if st.session_state.use_voice == True:
-                            audio_file = text_to_speech(response["content"])
-                            autoplay_audio(audio_file)
-                            st.session_state.use_voice = False
+                        # if st.session_state.use_voice:
+                        #     st.session_state.use_voice = False
 
-                            os.remove(audio_file)
+                        #     audio_file = text_to_speech(response["content"])
+                        #     autoplay_audio(audio_file)
+
+                        #     os.remove(audio_file)
 
                         st.session_state.messages.append(ChatMessage(type="ai", content=response["content"]))
                         with st.chat_message("ai"):
