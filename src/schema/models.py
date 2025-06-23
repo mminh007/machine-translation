@@ -4,6 +4,9 @@ import os
 from schema.base import BaseModelWrapper, SpeechRequest, TextRequest
 from transformers import MBart50Tokenizer, MBartForConditionalGeneration
 import whisper
+from llama_cpp import Llama
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage
 
 
 class TextModel(BaseModelWrapper):
@@ -106,6 +109,15 @@ class LocalvLLMModelName(StrEnum):
     MISTRAL_7B = "mistral-7b"
     LLAMA_3_8B = "llama-3-8b"
     LLAMA_3_34B = "llama-3-34b"
+
+
+class LlmCppModelNam(StrEnum):
+    """Llm-cpp model names"""
+    LLAMA_2_7B_CHAT_LLM = "llama-llm-2-7b-Q3-K-M"
+
+class LlamaCppModelName(StrEnum):
+    """Llma-cpp model names"""
+    LLAMA_2_7B_CHAT = "llama-2-7b-Q3-K-M"
 
 class HuggingFaceModelName(StrEnum):
     """HuggingFace model names"""

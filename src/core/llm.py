@@ -1,6 +1,7 @@
 from functools import cache
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from logs.logger_factory import get_logger
+from schema.llamaCpp import ChatLlamaCpp
 import traceback
 
 logger = get_logger("llm", "llm.log")
@@ -28,6 +29,7 @@ _MODEL_MAP: dict[AllModelEnum, type] = {
     LocalvLLMModelName.LLAMA_3_34B: "llama-3-34b",
     LocalvLLMModelName.LLAMA_32_3B_INSTRUCT: "llama-32-3B-instruct",
     LocalvLLMModelName.LLAMA_32_1B_INSTRUCT: "llama-32-1B-instruct",
+    LocalvLLMModelName.LLAMA_CPP_7B: "llama-cpp-7b"
 }
 
 @cache
@@ -42,7 +44,7 @@ def get_model(model_name: str | AllModelEnum):
             for enum_class in (OpenAIModelName,
                                AzureOpenAIModelName,
                                DeepseekModelName,
-                               LocalvLLMModelName,):
+                               LocalvLLMModelName):
                 try:
                     model_name = enum_class(model_name)
                     break

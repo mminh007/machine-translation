@@ -19,3 +19,5 @@ $PYTHON_CMD -m vllm.entrypoints.openai.api_server \
     --gpu-memory-utilization 0.7 \
     --max-model-len 2048 \
     --dtype half
+
+    

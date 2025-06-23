@@ -1,0 +1,21 @@
+services:
+  llama-cpp-server:
+    build:
+      context: .
+      dockerfile: cpu.dockerfile
+    image: llama-cpp/cpu:latest
+    container_name: llama-cpp-cpu
+    entrypoint: ["bin/bash", "/app/entrypoint.sh"]
+    env_file: 
+      - ../.env
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+      - /c/Users/tuanm/.cache/huggingface:/root/.cache/huggingface
+    networks:
+      - paos-network
+
+networks:
+  paos-network:
+    external: true

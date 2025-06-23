@@ -1,0 +1,18 @@
+services:
+  llm:
+    image: ghcr.io/abetlen/llm:latest
+    container_name: llm-cpp-cpu
+    entrypoint: ["bin/bash", "/app/entrypoint.sh"]
+    env_file: 
+      - ../.env
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+      - /c/Users/tuanm/.cache/huggingface:/root/.cache/huggingface
+    networks:
+      - paos-network
+
+networks:
+  paos-network:
+    external: true
